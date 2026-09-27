@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Feed</title>
+<style>
+  :root{
+    --bg:#0b0b0d;
+    --card:#151517;
+    --text:#f2f0ec;
+    --muted:#8a8890;
+    --accent:#c23b3b;
+    --gold:#c9a24a;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:var(--bg); color:var(--text);
+    font-family: -apple-system, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  body{
+    display:flex; flex-direction:column;
+    max-width:480px; margin:0 auto;
+    min-height:100%;
+  }
+
+  /* status bar */
+  .statusbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: calc(10px + var(--safe-top)) 18px 8px;
+    font-size:14px; font-weight:600; letter-spacing:.2px;
+    color:var(--text);
+  }
+  .statusbar .icons{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted);}
+
+  /* top search */
+  .topbar{
+    padding:4px 14px 12px;
+    display:flex; gap:10px; align-items:center;
+  }
+  .search{
+    flex:1;
+    background:var(--card);
+    border:1px solid #232326;
+    border-radius:14px;
+    padding:10px 14px;
+    color:var(--muted);
+    font-size:14px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .search svg{flex-shrink:0;}
+
+  /* masonry feed */
+  .feed{
+    flex:1;
+    overflow-y:auto;
+    padding: 4px 8px 12px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+  .col{display:flex; flex-direction:column; gap:8px;}
+
+  .pin{
+    position:relative;
+    border-radius:16px;
+    overflow:hidden;
+    background:var(--card);
+    display:flex; flex-direction:column;
+  }
+  .pin .art{
+    width:100%;
+    display:flex; align-items:flex-end;
+    position:relative;
+  }
+  .pin .art::after{
+    content:"";
+    position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,.55) 100%);
+  }
+  .pin .badge{
+    position:relative; z-index:1;
+    margin:10px 12px;
+    font-size:12px; color:#fff; opacity:.9;
+    text-shadow:0 1px 3px rgba(0,0,0,.6);
+  }
+  .pin .caption{
+    padding:8px 12px 12px;
+    font-size:12.5px;
+    color:var(--muted);
+    display:flex; align-items:center; justify-content:space-between;
+    gap:8px;
+  }
+  .pin .caption span{
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .pin .dots{
+    flex-shrink:0; color:var(--muted); font-size:16px; line-height:1;
+  }
+
+  /* generated art fills, standing in for photos */
+  .art-1{ height:300px; background:
+    radial-gradient(120% 90% at 20% 10%, #3a0e12 0%, #0b0b0d 55%),
+    linear-gradient(160deg, #1a0507 0%, #05050a 70%);
+  }
+  .art-2{ height:230px; background:
+    radial-gradient(90% 70% at 70% 20%, #23262b 0%, #0b0b0d 60%),
+    linear-gradient(200deg,#141519 0%, #08080a 80%);
+  }
+  .art-3{ height:250px; background:
+    radial-gradient(100% 80% at 30% 90%, #241d33 0%, #0b0b0d 55%),
+    linear-gradient(170deg,#150c1c 0%, #08080a 75%);
+  }
+  .art-4{ height:190px; background:
+    radial-gradient(90% 90% at 60% 30%, #2a2a2a 0%, #0b0b0d 60%),
+    linear-gradient(210deg,#1c1c1c 0%, #060607 80%);
+  }
+  .art-5{ height:150px; background:
+    linear-gradient(135deg,#141416, #0b0b0d);
+    border:1px dashed #26262a;
+  }
+
+  /* decorative silhouette strokes, pure CSS, no photographic reference */
+  .art-1 .mark{
+    position:absolute; right:14%; top:8%; width:46%; aspect-ratio:1/1.6;
+    border-radius:50% 50% 42% 42%;
+    background:linear-gradient(160deg,#5c1015,#20040a);
+    filter:blur(.2px);
+  }
+  .art-3 .mark{
+    position:absolute; left:10%; bottom:10%; width:55%; height:60%;
+    background:linear-gradient(200deg,#4a3560,#150c1c);
+    clip-path:polygon(20% 0%, 80% 10%, 100% 70%, 60% 100%, 0% 80%);
+  }
+
+  /* bottom nav */
+  .navbar{
+    display:flex; align-items:center; justify-content:space-around;
+    padding: 10px 6px calc(10px + var(--safe-bottom));
+    background:#0e0e10;
+    border-top:1px solid #1c1c1f;
+  }
+  .navbar .item{
+    width:38px; height:38px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--muted);
+  }
+  .navbar .item.active{ background:#1c1c1f; color:var(--text); }
+  .navbar .avatar{
+    width:26px; height:26px; border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),#5c1015);
+    border:1.5px solid var(--gold);
+  }
+  .navbar .dot{
+    position:absolute; width:7px; height:7px; border-radius:50%;
+    background:var(--accent); transform:translate(10px,-10px);
+  }
+</style>
+</head>
+<body>
+
+  <div class="statusbar">
+    <span>20:06</span>
+    <div class="icons">
+      <span>8.43 KB/s</span>
+      <span>●●●</span>
+      <span>98%</span>
+    </div>
+  </div>
+
+  <div class="topbar">
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Search
+    </div>
+  </div>
+
+  <div class="feed">
+    <div class="col">
+      <div class="pin">
+        <div class="art art-1"><div class="mark"></div><div class="badge">Ink &amp; Silk</div></div>
+        <div class="caption"><span>Crimson kimono study</span><span class="dots">⋯</span></div>
+      </div>
+      <div class="pin">
+        <div class="art art-3"><div class="mark"></div><div class="badge">Night Bloom</div></div>
+        <div class="caption"><span>Violet portrait series</span><span class="dots">⋯</span></div>
+      </div>
+      <div class="pin">
+        <div class="art art-5"></div>
+        <div class="caption"><span>More like this</span><span class="dots">⋯</span></div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="pin">
+        <div class="art art-2"><div class="badge">Track Day</div></div>
+        <div class="caption"><span>Rear wing, dusk run</span><span class="dots">⋯</span></div>
+      </div>
+      <div class="pin">
+        <div class="art art-4"><div class="badge">2022 Land Cruiser J300</div></div>
+        <div class="caption"><span>Off-road, wet gravel</span><span class="dots">⋯</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="navbar">
+    <div class="item active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 10.5V20a1 1 0 001 1h4v-6h6v6h4a1 1 0 001-1v-9.5L12 3z"/></svg>
+    </div>
+    <div class="item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </div>
+    <div class="item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    <div class="item" style="position:relative;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+      <span class="dot"></span>
+    </div>
+    <div class="item"><div class="avatar"></div></div>
+  </div>
+
+</body>
+</html>
